@@ -45,7 +45,9 @@ def parse_filename(filename: str) -> MediaInfo:
     if resolution and "x" in resolution.lower():
         resolution = f"{resolution.split('x', 1)[1]}p"
 
-    source = source_match.group(1).replace(".", " ").replace("-", "-").upper() if source_match else None
+    source = (
+        source_match.group(1).replace(".", " ").replace("-", "-").upper() if source_match else None
+    )
     return MediaInfo(
         title=title,
         year=int(year_match.group(1)) if year_match else None,

@@ -35,7 +35,11 @@ def _read_url(url: str) -> bytes:
 
 def _extract_archive(data: bytes, destination: Path, stem: str) -> Path:
     with zipfile.ZipFile(io.BytesIO(data)) as archive:
-        candidates = [item for item in archive.infolist() if Path(item.filename).suffix.lower() in SUPPORTED_EXTENSIONS]
+        candidates = [
+            item
+            for item in archive.infolist()
+            if Path(item.filename).suffix.lower() in SUPPORTED_EXTENSIONS
+        ]
         if not candidates:
             raise ValueError("archive contains no supported subtitle file")
         candidate = candidates[0]

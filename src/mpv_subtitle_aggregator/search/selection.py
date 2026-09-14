@@ -7,7 +7,9 @@ from collections.abc import Callable
 from ..models import SubtitleResult
 
 
-def select_result(results: list[SubtitleResult], choice: str | None = None, input_fn: Callable[[str], str] = input) -> SubtitleResult | None:
+def select_result(
+    results: list[SubtitleResult], choice: str | None = None, input_fn: Callable[[str], str] = input
+) -> SubtitleResult | None:
     if not results:
         return None
     value = choice if choice is not None else input_fn("Select subtitle number, or q to cancel: ")

@@ -7,7 +7,9 @@ from mpv_subtitle_aggregator.models import MediaType
 
 class MediaIdentifierTests(unittest.TestCase):
     def test_movie_release(self) -> None:
-        media = parse_filename("100.Meters.2025.1080p.NF.WEB-DL.DUAL.DDP5.1.H.264.MSubs-ToonsHub.mkv")
+        media = parse_filename(
+            "100.Meters.2025.1080p.NF.WEB-DL.DUAL.DDP5.1.H.264.MSubs-ToonsHub.mkv"
+        )
         self.assertEqual(media.title, "100 Meters")
         self.assertEqual(media.year, 2025)
         self.assertEqual(media.resolution, "1080p")

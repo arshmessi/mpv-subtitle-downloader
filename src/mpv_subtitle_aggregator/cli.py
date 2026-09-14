@@ -53,13 +53,19 @@ def main() -> int:
         media = MediaInfo(args.title, year=args.year, season=args.season, episode=args.episode)
     providers = args.providers.split(",") if getattr(args, "providers", None) else config.providers
     registry = built_in_registry()
-    response = asyncio.run(SearchOrchestrator(registry.select(providers), config.timeout).search(media, [args.language]))
+    response = asyncio.run(
+        SearchOrchestrator(registry.select(providers), config.timeout).search(
+            media, [args.language]
+        )
+    )
     if getattr(args, "json", False):
         print(json.dumps(asdict(response), default=str, indent=2))
     else:
         print(f"Subtitle Results: {media.title}")
         for index, result in enumerate(response.results, 1):
-            print(f"{index}. {result.score:.0f} {result.language} {result.provider} {result.release}")
+            print(
+                f"{index}. {result.score:.0f} {result.language} {result.provider} {result.release}"
+            )
         if getattr(args, "interactive", False) and response.results:
             selected = select_result(response.results)
             print(f"Selected {selected.result_id}" if selected else "Cancelled")

@@ -38,7 +38,11 @@ def load_config(path: Path | None = None) -> AppConfig:
     with target.open("rb") as file:
         data: dict[str, Any] = tomllib.load(file)
     providers = data.get("providers", {})
-    enabled = [key for key, value in providers.items() if isinstance(value, dict) and value.get("enabled", True)]
+    enabled = [
+        key
+        for key, value in providers.items()
+        if isinstance(value, dict) and value.get("enabled", True)
+    ]
     return AppConfig(
         providers=enabled or AppConfig().providers,
         language=str(data.get("language", "en")),

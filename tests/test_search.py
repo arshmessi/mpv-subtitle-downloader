@@ -13,7 +13,9 @@ class GoodProvider(SubtitleProvider):
     name = "Good"
 
     async def search(self, media, languages):
-        return ProviderSearchResult([SubtitleResult("x", self.id, "en", "Film 2025 1080p", content_hash="same")])
+        return ProviderSearchResult(
+            [SubtitleResult("x", self.id, "en", "Film 2025 1080p", content_hash="same")]
+        )
 
 
 class FailingProvider(SubtitleProvider):
@@ -26,7 +28,11 @@ class FailingProvider(SubtitleProvider):
 
 class SearchTests(unittest.TestCase):
     def test_failure_isolated_and_result_ids_assigned(self) -> None:
-        response = asyncio.run(SearchOrchestrator([GoodProvider(), FailingProvider()]).search(MediaInfo("Film", year=2025)))
+        response = asyncio.run(
+            SearchOrchestrator([GoodProvider(), FailingProvider()]).search(
+                MediaInfo("Film", year=2025)
+            )
+        )
         self.assertTrue(response.success)
         self.assertEqual(response.results[0].result_id, "r1")
         self.assertEqual(response.providers[1].status, ProviderStatus.ERROR)

@@ -5,8 +5,9 @@ from __future__ import annotations
 import asyncio
 import json
 import os
+from collections.abc import Awaitable, Callable
 from pathlib import Path
-from typing import Any, Awaitable, Callable
+from typing import Any
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
@@ -43,7 +44,10 @@ class JsonApiProvider(SubtitleProvider):
         }
         response = await self.transport(self.endpoint, payload)
         return ProviderSearchResult(
-            results=[self._result(item, index) for index, item in enumerate(response.get("results", []), 1)]
+            results=[
+                self._result(item, index)
+                for index, item in enumerate(response.get("results", []), 1)
+            ]
         )
 
     def _result(self, item: dict[str, Any], index: int) -> SubtitleResult:
@@ -93,7 +97,9 @@ class OpenSubtitlesProvider(JsonApiProvider):
         if not response.get("data") and media.year:
             fallback_params = dict(params)
             fallback_params.pop("year", None)
-            response = await asyncio.to_thread(self._request, "GET", "/subtitles", fallback_params, None)
+            response = await asyncio.to_thread(
+                self._request, "GET", "/subtitles", fallback_params, None
+            )
         results: list[SubtitleResult] = []
         for index, item in enumerate(response.get("data", []), 1):
             attributes = item.get("attributes", {})
@@ -107,7 +113,10 @@ class OpenSubtitlesProvider(JsonApiProvider):
                     hearing_impaired=bool(attributes.get("hearing_impaired", False)),
                     forced=bool(attributes.get("foreign_parts_only", False)),
                     downloadable=bool(files),
-                    raw_provider_data={"subtitle_id": item.get("id"), "file_id": files[0].get("file_id") if files else None},
+                    raw_provider_data={
+                        "subtitle_id": item.get("id"),
+                        "file_id": files[0].get("file_id") if files else None,
+                    },
                 )
             )
         return ProviderSearchResult(results, _response_message(response))
@@ -118,7 +127,9 @@ class OpenSubtitlesProvider(JsonApiProvider):
         file_id = subtitle.raw_provider_data.get("file_id")
         if not file_id:
             raise ValueError("OpenSubtitles result has no downloadable file id")
-        response = await asyncio.to_thread(self._request, "POST", "/download", {}, {"file_id": file_id})
+        response = await asyncio.to_thread(
+            self._request, "POST", "/download", {}, {"file_id": file_id}
+        )
         download_url = response.get("link")
         if not download_url:
             raise ValueError("OpenSubtitles did not return a download link")
@@ -162,7 +173,10 @@ class SubSourceProvider(JsonApiProvider):
 def _response_message(response: dict[str, Any]) -> str | None:
     errors = response.get("errors")
     if isinstance(errors, list) and errors:
-        messages = [str(item.get("message", item)) if isinstance(item, dict) else str(item) for item in errors]
+        messages = [
+            str(item.get("message", item)) if isinstance(item, dict) else str(item)
+            for item in errors
+        ]
         return "; ".join(messages)
     total_count = response.get("total_count")
     if total_count == 0:

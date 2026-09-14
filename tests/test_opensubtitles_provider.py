@@ -28,7 +28,11 @@ class OpenSubtitlesProviderTests(unittest.TestCase):
 
         def request(method, path, params, payload):
             calls.append(params)
-            return {"data": []} if len(calls) == 1 else {"data": [{"id": "1", "attributes": {"language": "en"}}]}
+            return (
+                {"data": []}
+                if len(calls) == 1
+                else {"data": [{"id": "1", "attributes": {"language": "en"}}]}
+            )
 
         provider._request = request
         response = asyncio.run(provider.search(MediaInfo("100 Meters", year=2025), ["en"]))

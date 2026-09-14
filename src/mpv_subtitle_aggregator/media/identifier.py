@@ -6,8 +6,8 @@ import json
 from pathlib import Path
 from urllib.parse import urlparse
 
-from .filename_parser import parse_filename
 from ..models import MediaInfo, MediaType
+from .filename_parser import parse_filename
 
 
 def identify(

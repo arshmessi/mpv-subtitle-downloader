@@ -7,8 +7,7 @@ from mpv_subtitle_aggregator.providers.builtin import OpenSubtitlesProvider
 
 
 @unittest.skipUnless(
-    os.environ.get("MPV_SUBTITLE_LIVE_TESTS") == "1"
-    and os.environ.get("OPEN_SUBTITLES_API_KEY"),
+    os.environ.get("MPV_SUBTITLE_LIVE_TESTS") == "1" and os.environ.get("OPEN_SUBTITLES_API_KEY"),
     "set MPV_SUBTITLE_LIVE_TESTS=1 and OPEN_SUBTITLES_API_KEY to run live tests",
 )
 class OpenSubtitlesLiveTests(unittest.TestCase):

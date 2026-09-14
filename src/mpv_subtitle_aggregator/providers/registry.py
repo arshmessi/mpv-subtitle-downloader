@@ -21,9 +21,15 @@ class ProviderRegistry:
     def all(self) -> list[SubtitleProvider]:
         return list(self._providers.values())
 
-    def select(self, include: list[str] | None = None, exclude: list[str] | None = None) -> list[SubtitleProvider]:
+    def select(
+        self, include: list[str] | None = None, exclude: list[str] | None = None
+    ) -> list[SubtitleProvider]:
         excluded = set(exclude or [])
-        providers = self.all() if include is None or "all" in include else [self.get(item) for item in include]
+        providers = (
+            self.all()
+            if include is None or "all" in include
+            else [self.get(item) for item in include]
+        )
         return [provider for provider in providers if provider.id not in excluded]
 
 
