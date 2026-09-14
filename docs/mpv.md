@@ -7,6 +7,7 @@ The default controls are:
 
 - `B`: search, rank, download the best result, and load it.
 - `Shift+B`: search and show up to nine results in the MPV OSD.
+- `C`: edit the detected title, then search using the corrected identity.
 - `1` through `9`: select a displayed result.
 - `Escape`: cancel result selection.
 

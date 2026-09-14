@@ -21,7 +21,7 @@ def identify(
     metadata = metadata or {}
     source_name = filename or (Path(path).name if path and not _is_url(path) else None)
     parsed = parse_filename(source_name) if source_name else MediaInfo(title=media_title or "")
-    if media_title and (not source_name or parsed.title == parsed.filename):
+    if media_title:
         parsed.title = _clean_title(media_title)
     parsed.path = path
     parsed.is_stream = bool(path and _is_url(path))

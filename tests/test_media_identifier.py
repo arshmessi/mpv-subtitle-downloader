@@ -27,6 +27,14 @@ class MediaIdentifierTests(unittest.TestCase):
         self.assertEqual(media.title, "100 Meters (2025)")
         self.assertIsNone(media.file_hash)
 
+    def test_explicit_title_overrides_wrong_filename_title(self) -> None:
+        media = identify(
+            "Wrong.Movie.2024.mkv",
+            filename="Wrong.Movie.2024.mkv",
+            media_title="Correct Movie",
+        )
+        self.assertEqual(media.title, "Correct Movie")
+
 
 if __name__ == "__main__":
     unittest.main()

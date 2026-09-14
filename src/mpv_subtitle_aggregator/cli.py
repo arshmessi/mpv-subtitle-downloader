@@ -29,6 +29,9 @@ def main() -> int:
     search.add_argument("--json", action="store_true")
     search.add_argument("--download-directory", type=Path)
     search.add_argument("--media-title", default=None)
+    search.add_argument("--season", type=int)
+    search.add_argument("--episode", type=int)
+    search.add_argument("--imdb-id", default=None)
     title = subparsers.add_parser("search-title")
     title.add_argument("title")
     title.add_argument("--year", type=int)
@@ -55,6 +58,12 @@ def main() -> int:
     if args.command == "search":
         path = Path(args.file)
         media = identify(str(path), filename=path.name, media_title=args.media_title)
+        if args.season is not None:
+            media.season = args.season
+        if args.episode is not None:
+            media.episode = args.episode
+        if args.imdb_id:
+            media.imdb_id = args.imdb_id
     else:
         media = MediaInfo(args.title, year=args.year, season=args.season, episode=args.episode)
     providers = args.providers.split(",") if getattr(args, "providers", None) else config.providers

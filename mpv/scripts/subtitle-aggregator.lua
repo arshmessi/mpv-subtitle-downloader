@@ -1,9 +1,11 @@
 local options = require 'mp.options'
+local input = require 'mp.input'
 local utils = require 'mp.utils'
 
 local opts = {
     hotkey = 'b',
     selection_hotkey = 'B',
+    correction_hotkey = 'C',
     language = 'en',
     profile = 'default',
 }
@@ -70,15 +72,18 @@ local function show_results(payload)
     end)
 end
 
-local function search(interactive)
+local function run_search(interactive, title, season, episode, imdb_id)
     local path = mp.get_property('path') or ''
-    local title = mp.get_property('media-title') or mp.get_property('filename') or ''
+    title = title or mp.get_property('media-title') or mp.get_property('filename') or ''
     mp.osd_message('Searching subtitles...')
     local command = {'mpv-subtitle', 'search', path, '--language', opts.language, '--json'}
     if title ~= '' then
         table.insert(command, '--media-title')
         table.insert(command, title)
     end
+    if season then table.insert(command, '--season'); table.insert(command, season) end
+    if episode then table.insert(command, '--episode'); table.insert(command, episode) end
+    if imdb_id then table.insert(command, '--imdb-id'); table.insert(command, imdb_id) end
     mp.command_native_async({
         name = 'subprocess',
         args = command,
@@ -100,5 +105,25 @@ local function search(interactive)
     end)
 end
 
+local function search(interactive)
+    run_search(interactive)
+end
+
+local function correct_identity()
+    local current_title = mp.get_property('media-title') or mp.get_property('filename') or ''
+    input.get({
+        prompt = 'Subtitle title: ',
+        default_text = current_title,
+        submit = function(title)
+            if title and title ~= '' then
+                run_search(true, title)
+            else
+                mp.osd_message('Identity correction cancelled')
+            end
+        end,
+    })
+end
+
 mp.add_key_binding(opts.hotkey, 'subtitle-search', function() search(false) end)
 mp.add_key_binding(opts.selection_hotkey, 'subtitle-selection', function() search(true) end)
+mp.add_key_binding(opts.correction_hotkey, 'subtitle-correct-identity', correct_identity)
