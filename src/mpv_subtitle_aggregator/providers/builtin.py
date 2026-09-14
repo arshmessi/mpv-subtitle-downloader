@@ -11,7 +11,7 @@ from typing import Any
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
-from ..models import MediaInfo, SubtitleResult
+from ..models import MediaInfo, ProviderStatus, SubtitleResult
 from .base import ProviderCapabilities, ProviderSearchResult, SubtitleProvider
 
 Transport = Callable[[str, dict[str, Any]], Awaitable[dict[str, Any]]]
@@ -33,7 +33,10 @@ class JsonApiProvider(SubtitleProvider):
 
     async def search(self, media: MediaInfo, languages: list[str]) -> ProviderSearchResult:
         if not self.endpoint:
-            return ProviderSearchResult(message="provider endpoint is not configured")
+            return ProviderSearchResult(
+                message="provider endpoint is not configured",
+                status=ProviderStatus.NOT_CONFIGURED,
+            )
         payload = {
             "title": media.title,
             "year": media.year,
@@ -79,7 +82,10 @@ class OpenSubtitlesProvider(JsonApiProvider):
 
     async def search(self, media: MediaInfo, languages: list[str]) -> ProviderSearchResult:
         if not self.api_key:
-            return ProviderSearchResult(message="OPEN_SUBTITLES_API_KEY is not configured")
+            return ProviderSearchResult(
+                message="OPEN_SUBTITLES_API_KEY is not configured",
+                status=ProviderStatus.NOT_CONFIGURED,
+            )
         params: dict[str, str] = {"languages": ",".join(languages), "order_by": "download_count"}
         if media.file_hash and not media.is_stream:
             params["moviehash"] = media.file_hash
@@ -119,7 +125,12 @@ class OpenSubtitlesProvider(JsonApiProvider):
                     },
                 )
             )
-        return ProviderSearchResult(results, _response_message(response))
+        message = _response_message(response)
+        return ProviderSearchResult(
+            results,
+            message,
+            ProviderStatus.SUCCESS if results else ProviderStatus.NO_RESULTS,
+        )
 
     async def download(self, subtitle: SubtitleResult, destination: Path) -> Path:
         if not self.api_key:

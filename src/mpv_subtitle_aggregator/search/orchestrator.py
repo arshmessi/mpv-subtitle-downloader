@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 from collections.abc import Iterable
 
 from ..models import MediaInfo, ProviderReport, ProviderStatus, SearchResponse, SubtitleResult
@@ -45,7 +46,7 @@ class SearchOrchestrator:
             try:
                 response = await asyncio.wait_for(provider.search(media, languages), self.timeout)
                 return ProviderReport(
-                    provider.id, ProviderStatus.OK, len(response.results), response.message
+                    provider.id, response.status, len(response.results), response.message
                 ), response.results
             except TimeoutError:
                 return ProviderReport(
@@ -53,7 +54,15 @@ class SearchOrchestrator:
                 ), []
             except PermissionError as error:
                 return ProviderReport(
-                    provider.id, ProviderStatus.AUTHENTICATION_REQUIRED, message=str(error)
+                    provider.id, ProviderStatus.AUTH_REQUIRED, message=str(error)
+                ), []
+            except ConnectionError as error:
+                return ProviderReport(
+                    provider.id, ProviderStatus.NETWORK_ERROR, message=str(error)
+                ), []
+            except (json.JSONDecodeError, ValueError) as error:
+                return ProviderReport(
+                    provider.id, ProviderStatus.PARSER_ERROR, message=str(error)
                 ), []
             except Exception as error:  # provider failures are intentionally isolated
                 return ProviderReport(provider.id, ProviderStatus.ERROR, message=str(error)), []

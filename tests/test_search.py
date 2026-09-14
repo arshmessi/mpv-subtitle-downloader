@@ -49,13 +49,5 @@ class SearchTests(unittest.TestCase):
         self.assertEqual(select_result(results, "2"), results[1])
         self.assertIsNone(select_result(results, "q"))
 
-    def test_embedded_result_gets_local_source_preference(self) -> None:
-        media = MediaInfo("Film")
-        embedded = SubtitleResult("embedded-1", "embedded", "en")
-        remote = SubtitleResult("remote-1", "subdl", "en")
-        ranked = rank_results(media, [remote, embedded])
-        self.assertEqual(ranked[0], embedded)
-
-
 if __name__ == "__main__":
     unittest.main()

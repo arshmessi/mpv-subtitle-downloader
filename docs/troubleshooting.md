@@ -14,8 +14,8 @@ Try a title search directly:
 mpv-subtitle search-title "100 Meters" --year 2025 --language en
 ```
 
-For local embedded tracks, install FFmpeg so `ffprobe` and `ffmpeg` are on
-`PATH`. Network adapters may require endpoint configuration or credentials.
+MPV owns embedded tracks and the aggregator does not inspect or extract them.
+Network adapters may require endpoint configuration or credentials.
 
 ## Jellyfin identity is wrong
 

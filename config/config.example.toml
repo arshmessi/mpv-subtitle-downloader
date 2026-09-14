@@ -17,12 +17,12 @@ priority = 90
 enabled = true
 priority = 80
 
-[providers.embedded]
+[providers.subdl_public]
 enabled = true
 priority = 200
 
 [profiles.default]
-providers = ["embedded", "opensubtitles", "subdl", "subsource"]
+providers = ["subdl_public", "opensubtitles", "subdl", "subsource"]
 
 [profiles.fast]
-providers = ["embedded", "opensubtitles", "subdl"]
+providers = ["subdl_public", "opensubtitles", "subdl"]

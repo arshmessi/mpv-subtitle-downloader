@@ -60,6 +60,10 @@ local function show_results(payload)
         return
     end
     local lines = {'Subtitle Results — ' .. (payload.media.title or 'current media')}
+    for _, report in ipairs(payload.providers or {}) do
+        local marker = report.status == 'success' and '[OK]' or '[WARN]'
+        lines[#lines + 1] = string.format('%s %s: %s results (%s)', marker, report.provider, report.result_count or 0, report.status or 'unknown')
+    end
     for index, item in ipairs(payload.results) do
         local providers = table.concat(item.providers or {item.provider}, ', ')
         lines[#lines + 1] = string.format('%d. %.0f %s %s %s', index, item.score or 0, item.language or '', providers, item.release or '')

@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from ..models import MediaInfo, SubtitleResult
+from ..models import MediaInfo, ProviderStatus, SubtitleResult
 
 
 @dataclass(frozen=True, slots=True)
@@ -26,6 +26,7 @@ class ProviderCapabilities:
 class ProviderSearchResult:
     results: list[SubtitleResult] = field(default_factory=list)
     message: str | None = None
+    status: ProviderStatus = ProviderStatus.SUCCESS
 
 
 class SubtitleProvider(ABC):

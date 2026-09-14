@@ -1,32 +1,33 @@
 # MPV Subtitle Aggregator
 
-Modular subtitle search and download tooling for MPV and Jellyfin MPV Shim.
+Manual subtitle search and download tooling for MPV and Jellyfin MPV Shim.
 
 The project keeps MPV integration, media identification, provider adapters,
-ranking, selection, and downloading independent. It is designed to work well
-with local files and metadata-only HTTP streams.
+ranking, selection, and downloading independent. MPV continues to own embedded
+subtitle tracks; this tool searches and adds external subtitles only when the
+user explicitly invokes it.
 
 ## Status
 
-Version 0.1.0 is a core/developer preview. Local filename identification,
-embedded subtitle inspection, provider contracts, concurrent orchestration,
-ranking, selection, safe download validation, CLI commands, and MPV integration
-are implemented. The network adapters currently require provider-specific
-credentials or endpoint configuration; unverified anonymous website scrapers
-are deliberately not advertised as supported.
+Version 0.1.0 is a core/developer preview. Movie/TV filename identification,
+provider orchestration, ranking, selection, safe downloads, and MPV integration
+are implemented. The default credential-free provider is a public SubDL movie
+adapter. OpenSubtitles.com, SubDL API, and SubSource API adapters remain
+optional and require the user's own configuration.
 
 ## What works now
 
-| Capability                                        | Status                          |
-| ------------------------------------------------- | ------------------------------- |
-| Local movie and TV filename identification        | Available                       |
-| Embedded local subtitle discovery                 | Available with FFmpeg           |
-| HTTP/Jellyfin metadata identification             | Available; no HTTP hashing      |
-| Alternative result selection and title correction | Available in MPV                |
-| Concurrent provider failure isolation             | Available                       |
-| OpenSubtitles API adapter                         | API key required                |
-| SubDL and SubSource adapters                      | Endpoint configuration required |
-| Credential-free internet providers                | Not yet verified                |
+| Capability                                 | Status                                    |
+| ------------------------------------------ | ----------------------------------------- |
+| Local movie and TV filename identification | Available                                 |
+| MPV/Jellyfin metadata identification       | Available; HTTP is never hashed           |
+| MPV-owned embedded subtitle handling       | Aggregator does not inspect or replace it |
+| Manual alternative result selection        | Available                                 |
+| Manual media-title correction              | Available                                 |
+| Credential-free provider                   | SubDL public movie pages                  |
+| OpenSubtitles.com                          | Optional API key                          |
+| SubDL/SubSource APIs                       | Optional endpoint/API configuration       |
+| Automatic/background subtitle search       | Not implemented by design                 |
 
 ## Quick start
 
@@ -40,17 +41,16 @@ mpv-subtitle search-title "100 Meters" --year 2025 --language en --json
 
 See [docs/installation.md](docs/installation.md), [docs/configuration.md](docs/configuration.md),
 [docs/jellyfin.md](docs/jellyfin.md), [docs/troubleshooting.md](docs/troubleshooting.md),
-and [docs/architecture.md](docs/architecture.md) for setup and extension details.
+and [docs/architecture.md](docs/architecture.md).
 
-Live OpenSubtitles checks are opt-in and require `OPEN_SUBTITLES_API_KEY`; the
-normal CI suite never contacts providers.
+Live OpenSubtitles checks are opt-in and require `OPEN_SUBTITLES_API_KEY`; normal
+CI never contacts providers.
 
 ## Privacy and network behavior
 
-The video itself is not uploaded. When searching, the application sends
-identification data to enabled providers, such as title, year, episode, and,
-for eligible local files, a media hash. HTTP stream URLs are not hashed.
-Review enabled providers and their terms before using the application.
+The video itself is not uploaded. Enabled providers receive identification data
+such as title, year, episode, and, where configured, a local media hash. HTTP
+stream URLs are never hashed. Review provider terms before enabling a provider.
 
 ## License
 

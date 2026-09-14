@@ -17,18 +17,18 @@ profile = "fast"
 enabled = true
 priority = 20
 
-[providers.embedded]
+[providers.subdl_public]
 enabled = true
 priority = 200
 
 [profiles.fast]
-providers = ["embedded", "subdl"]
+providers = ["subdl_public", "subdl"]
 """,
                 encoding="utf-8",
             )
             config = load_config(path)
         self.assertEqual(config.profile, "fast")
-        self.assertEqual(config.providers, ["embedded", "subdl"])
+        self.assertEqual(config.providers, ["subdl_public", "subdl"])
 
 
 if __name__ == "__main__":

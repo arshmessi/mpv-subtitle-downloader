@@ -12,7 +12,7 @@ from typing import Any
 @dataclass(slots=True)
 class AppConfig:
     providers: list[str] = field(
-        default_factory=lambda: ["embedded", "opensubtitles", "subdl", "subsource"]
+        default_factory=lambda: ["subdl_public", "opensubtitles", "subdl", "subsource"]
     )
     excluded_providers: list[str] = field(default_factory=list)
     language: str = "en"

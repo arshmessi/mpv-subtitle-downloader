@@ -14,11 +14,19 @@ class MediaType(StrEnum):
 
 
 class ProviderStatus(StrEnum):
+    SUCCESS = "success"
+    NO_RESULTS = "no_results"
+    NOT_CONFIGURED = "not_configured"
+    AUTH_REQUIRED = "auth_required"
+    RATE_LIMITED = "rate_limited"
+    BLOCKED = "blocked"
+    NETWORK_ERROR = "network_error"
+    PARSER_ERROR = "parser_error"
+    UNSUPPORTED = "unsupported"
+    TIMEOUT = "timeout"
     OK = "ok"
     UNAVAILABLE = "unavailable"
     AUTHENTICATION_REQUIRED = "authentication_required"
-    RATE_LIMITED = "rate_limited"
-    TIMEOUT = "timeout"
     ERROR = "error"
 
 

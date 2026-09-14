@@ -1,11 +1,20 @@
 import asyncio
+import os
 import unittest
+from unittest.mock import patch
 
-from mpv_subtitle_aggregator.models import MediaInfo
+from mpv_subtitle_aggregator.models import MediaInfo, ProviderStatus
 from mpv_subtitle_aggregator.providers.builtin import OpenSubtitlesProvider
 
 
 class OpenSubtitlesProviderTests(unittest.TestCase):
+    def test_missing_api_key_is_not_configured(self) -> None:
+        with patch.dict(os.environ, {"OPEN_SUBTITLES_API_KEY": ""}):
+            response = asyncio.run(
+                OpenSubtitlesProvider(api_key=None).search(MediaInfo("Film"), ["en"])
+            )
+        self.assertEqual(response.status, ProviderStatus.NOT_CONFIGURED)
+
     def test_imdb_id_is_sent_without_tt_prefix(self) -> None:
         captured: dict[str, str] = {}
         provider = OpenSubtitlesProvider(api_key="test")
