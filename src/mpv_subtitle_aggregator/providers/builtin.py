@@ -79,7 +79,9 @@ class OpenSubtitlesProvider(JsonApiProvider):
         params: dict[str, str] = {"languages": ",".join(languages), "order_by": "download_count"}
         if media.file_hash and not media.is_stream:
             params["moviehash"] = media.file_hash
-        if media.title:
+        if media.imdb_id:
+            params["imdb_id"] = media.imdb_id.removeprefix("tt")
+        elif media.title:
             params["query"] = media.title
         if media.year:
             params["year"] = str(media.year)

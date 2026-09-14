@@ -14,7 +14,9 @@ from mpv_subtitle_aggregator.providers.builtin import OpenSubtitlesProvider
 class OpenSubtitlesLiveTests(unittest.TestCase):
     def test_known_title_search(self) -> None:
         response = asyncio.run(
-            OpenSubtitlesProvider().search(MediaInfo("100 Meters", year=2025), ["en"])
+            OpenSubtitlesProvider().search(
+                MediaInfo("100 Meters", year=2025, imdb_id="tt32600395"), ["en"]
+            )
         )
         self.assertIsInstance(response.results, list)
         self.assertTrue(response.results, response.message or "OpenSubtitles returned no results")
