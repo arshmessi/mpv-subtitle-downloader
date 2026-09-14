@@ -12,3 +12,17 @@ The system has seven independent boundaries:
 
 Provider errors are reported per provider and cannot discard successful results.
 HTTP streams are identified from metadata and are never hashed.
+
+## Identification and correction
+
+For local media, the Python filename parser identifies common release tokens:
+title, year, `SxxEyy`, resolution, source, codec, and release group. For HTTP
+or Jellyfin streams, the MPV adapter forwards `media-title` and other safe MPV
+properties; the backend does not hash the URL. Provider results are ranked as a
+recommendation, never treated as unquestionable truth.
+
+The MPV Lua adapter owns correction at the player boundary. `B` downloads the
+best-ranked result. `Shift+B` shows the ranked results in the MPV OSD, maps keys
+`1` through `9` to result IDs, supports Escape cancellation, and loads the
+selected file with `sub-add`. The Lua layer does not parse titles or provider
+responses beyond the stable JSON contract.

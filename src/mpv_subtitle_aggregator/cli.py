@@ -9,9 +9,9 @@ from dataclasses import asdict
 from pathlib import Path
 
 from . import __version__
-from .config import load_config
+from .config import cache_directory, load_config
 from .media.identifier import identify
-from .models import MediaInfo
+from .models import MediaInfo, SubtitleResult
 from .providers.registry import built_in_registry
 from .search.orchestrator import SearchOrchestrator
 from .search.selection import select_result
@@ -28,6 +28,7 @@ def main() -> int:
     search.add_argument("--interactive", action="store_true")
     search.add_argument("--json", action="store_true")
     search.add_argument("--download-directory", type=Path)
+    search.add_argument("--media-title", default=None)
     title = subparsers.add_parser("search-title")
     title.add_argument("title")
     title.add_argument("--year", type=int)
@@ -35,6 +36,9 @@ def main() -> int:
     title.add_argument("--episode", type=int)
     title.add_argument("--language", default="en")
     title.add_argument("--json", action="store_true")
+    download = subparsers.add_parser("download-result")
+    download.add_argument("result_id")
+    download.add_argument("--json", action="store_true")
     subparsers.add_parser("providers")
     subparsers.add_parser("doctor")
     args = parser.parse_args()
@@ -46,9 +50,11 @@ def main() -> int:
         print("MPV Subtitle Aggregator Doctor\n  Core              OK\n  Provider registry OK")
         return 0
     config = load_config()
+    if args.command == "download-result":
+        return _download_cached_result(args.result_id, args.json, config)
     if args.command == "search":
         path = Path(args.file)
-        media = identify(str(path), filename=path.name)
+        media = identify(str(path), filename=path.name, media_title=args.media_title)
     else:
         media = MediaInfo(args.title, year=args.year, season=args.season, episode=args.episode)
     providers = args.providers.split(",") if getattr(args, "providers", None) else config.providers
@@ -58,6 +64,7 @@ def main() -> int:
             media, [args.language]
         )
     )
+    _save_search_response(response)
     if getattr(args, "json", False):
         print(json.dumps(asdict(response), default=str, indent=2))
     else:
@@ -70,3 +77,32 @@ def main() -> int:
             selected = select_result(response.results)
             print(f"Selected {selected.result_id}" if selected else "Cancelled")
     return 0 if response.success else 1
+
+
+def _save_search_response(response: object) -> None:
+    cache_directory().mkdir(parents=True, exist_ok=True)
+    cache_file = cache_directory() / "last-search.json"
+    cache_file.write_text(json.dumps(asdict(response), default=str), encoding="utf-8")
+
+
+def _download_cached_result(result_id: str, as_json: bool, config: object) -> int:
+    cache_file = cache_directory() / "last-search.json"
+    if not cache_file.exists():
+        message = "No cached search results are available"
+        print(json.dumps({"success": False, "message": message}) if as_json else message)
+        return 1
+    payload = json.loads(cache_file.read_text(encoding="utf-8"))
+    matching = next(
+        (item for item in payload.get("results", []) if item.get("result_id") == result_id), None
+    )
+    if matching is None:
+        message = f"Unknown subtitle result: {result_id}"
+        print(json.dumps({"success": False, "message": message}) if as_json else message)
+        return 1
+    result = SubtitleResult(**matching)
+    provider = built_in_registry().get(result.provider)
+    destination = config.download_directory
+    path = asyncio.run(provider.download(result, destination))
+    output = {"success": True, "path": str(path), "result_id": result_id}
+    print(json.dumps(output) if as_json else str(path))
+    return 0
