@@ -4,14 +4,15 @@ local utils = require 'mp.utils'
 
 local opts = {
     hotkey = 'b',
-    selection_hotkey = 'B',
-    correction_hotkey = 'C',
     language = 'en',
     profile = 'default',
 }
 options.read_options(opts, 'subtitle-aggregator')
 
 local selection_bindings = {}
+local menu_bindings = {}
+local menu_index = 1
+local menu_open = false
 
 local function clear_selection()
     for _, binding in ipairs(selection_bindings) do
@@ -20,8 +21,17 @@ local function clear_selection()
     selection_bindings = {}
 end
 
+local function clear_menu()
+    for _, binding in ipairs(menu_bindings) do
+        mp.remove_key_binding(binding)
+    end
+    menu_bindings = {}
+    menu_open = false
+end
+
 local function download_result(result_id)
     clear_selection()
+    clear_menu()
     mp.osd_message('Downloading subtitle ' .. result_id .. '...')
     mp.command_native_async({
         name = 'subprocess',
@@ -124,6 +134,48 @@ local function correct_identity()
     })
 end
 
-mp.add_key_binding(opts.hotkey, 'subtitle-search', function() search(false) end)
-mp.add_key_binding(opts.selection_hotkey, 'subtitle-selection', function() search(true) end)
-mp.add_key_binding(opts.correction_hotkey, 'subtitle-correct-identity', correct_identity)
+local menu_items = {
+    {label = 'Quick search and load best match', action = function() run_search(false) end},
+    {label = 'Search and choose a subtitle', action = function() run_search(true) end},
+    {label = 'Correct media title and search', action = correct_identity},
+}
+
+local function render_menu()
+    local lines = {'Subtitle Aggregator'}
+    for index, item in ipairs(menu_items) do
+        local marker = index == menu_index and '> ' or '  '
+        lines[#lines + 1] = marker .. item.label
+    end
+    lines[#lines + 1] = 'Up/Down to navigate, Enter to select, Esc to cancel'
+    mp.osd_message(table.concat(lines, '\n'), 30)
+end
+
+local function open_menu()
+    if menu_open then return end
+    clear_selection()
+    menu_open = true
+    menu_index = 1
+    render_menu()
+    for _, key in ipairs({'UP', 'DOWN', 'ENTER', 'ESC'}) do
+        menu_bindings[#menu_bindings + 1] = 'subtitle-menu-' .. key
+    end
+    mp.add_forced_key_binding('UP', menu_bindings[1], function()
+        menu_index = (menu_index - 2) % #menu_items + 1
+        render_menu()
+    end)
+    mp.add_forced_key_binding('DOWN', menu_bindings[2], function()
+        menu_index = menu_index % #menu_items + 1
+        render_menu()
+    end)
+    mp.add_forced_key_binding('ENTER', menu_bindings[3], function()
+        local action = menu_items[menu_index].action
+        clear_menu()
+        action()
+    end)
+    mp.add_forced_key_binding('ESC', menu_bindings[4], function()
+        clear_menu()
+        mp.osd_message('Subtitle menu cancelled')
+    end)
+end
+
+mp.add_key_binding(opts.hotkey, 'subtitle-menu', open_menu)
