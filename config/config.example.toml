@@ -1,0 +1,24 @@
+language = "en"
+profile = "default"
+interactive_selection = false
+auto_select_best = true
+timeout = 15
+show_provider_status = true
+
+[providers.opensubtitles]
+enabled = true
+priority = 100
+
+[providers.subdl]
+enabled = true
+priority = 90
+
+[providers.subsource]
+enabled = true
+priority = 80
+
+[profiles.default]
+providers = ["opensubtitles", "subdl", "subsource"]
+
+[profiles.fast]
+providers = ["opensubtitles", "subdl"]
