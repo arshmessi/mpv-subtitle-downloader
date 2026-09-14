@@ -9,6 +9,8 @@ from ..models import MediaInfo, SubtitleResult
 
 def score_result(media: MediaInfo, result: SubtitleResult, language: str = "en") -> float:
     score = 0.0
+    if result.provider == "embedded":
+        score += 20
     if result.language.lower() == language.lower():
         score += 35
     if result.content_hash and media.file_hash and result.content_hash == media.file_hash:

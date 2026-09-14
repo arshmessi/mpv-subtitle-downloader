@@ -11,7 +11,9 @@ from typing import Any
 
 @dataclass(slots=True)
 class AppConfig:
-    providers: list[str] = field(default_factory=lambda: ["opensubtitles", "subdl", "subsource"])
+    providers: list[str] = field(
+        default_factory=lambda: ["embedded", "opensubtitles", "subdl", "subsource"]
+    )
     excluded_providers: list[str] = field(default_factory=list)
     language: str = "en"
     profile: str = "default"
@@ -40,11 +42,18 @@ def load_config(path: Path | None = None) -> AppConfig:
     providers = data.get("providers", {})
     enabled = [
         key
-        for key, value in providers.items()
+        for key, value in sorted(
+            providers.items(),
+            key=lambda item: item[1].get("priority", 0) if isinstance(item[1], dict) else 0,
+            reverse=True,
+        )
         if isinstance(value, dict) and value.get("enabled", True)
     ]
+    profile = str(data.get("profile", "default"))
+    profile_data = data.get("profiles", {}).get(profile, {})
+    configured = profile_data.get("providers") if isinstance(profile_data, dict) else None
     return AppConfig(
-        providers=enabled or AppConfig().providers,
+        providers=list(configured) if configured else (enabled or AppConfig().providers),
         language=str(data.get("language", "en")),
         profile=str(data.get("profile", "default")),
         interactive_selection=bool(data.get("interactive_selection", False)),

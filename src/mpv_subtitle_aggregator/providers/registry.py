@@ -6,6 +6,7 @@ from collections.abc import Iterable
 
 from .base import SubtitleProvider
 from .builtin import OpenSubtitlesProvider, SubDLProvider, SubSourceProvider
+from .embedded import EmbeddedSubtitleProvider
 
 
 class ProviderRegistry:
@@ -34,4 +35,6 @@ class ProviderRegistry:
 
 
 def built_in_registry() -> ProviderRegistry:
-    return ProviderRegistry([OpenSubtitlesProvider(), SubDLProvider(), SubSourceProvider()])
+    return ProviderRegistry(
+        [EmbeddedSubtitleProvider(), OpenSubtitlesProvider(), SubDLProvider(), SubSourceProvider()]
+    )
