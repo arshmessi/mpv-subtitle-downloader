@@ -17,7 +17,7 @@ class OpenSubtitlesLiveTests(unittest.TestCase):
             OpenSubtitlesProvider().search(MediaInfo("100 Meters", year=2025), ["en"])
         )
         self.assertIsInstance(response.results, list)
-        self.assertTrue(response.results, response.message)
+        self.assertTrue(response.results, response.message or "OpenSubtitles returned no results")
 
 
 if __name__ == "__main__":

@@ -88,6 +88,10 @@ class OpenSubtitlesProvider(JsonApiProvider):
         if media.episode is not None:
             params["episode_number"] = str(media.episode)
         response = await asyncio.to_thread(self._request, "GET", "/subtitles", params, None)
+        if not response.get("data") and media.year:
+            fallback_params = dict(params)
+            fallback_params.pop("year", None)
+            response = await asyncio.to_thread(self._request, "GET", "/subtitles", fallback_params, None)
         results: list[SubtitleResult] = []
         for index, item in enumerate(response.get("data", []), 1):
             attributes = item.get("attributes", {})
@@ -104,7 +108,7 @@ class OpenSubtitlesProvider(JsonApiProvider):
                     raw_provider_data={"subtitle_id": item.get("id"), "file_id": files[0].get("file_id") if files else None},
                 )
             )
-        return ProviderSearchResult(results)
+        return ProviderSearchResult(results, _response_message(response))
 
     async def download(self, subtitle: SubtitleResult, destination: Path) -> Path:
         if not self.api_key:
@@ -151,3 +155,14 @@ class SubDLProvider(JsonApiProvider):
 class SubSourceProvider(JsonApiProvider):
     id = "subsource"
     name = "SubSource"
+
+
+def _response_message(response: dict[str, Any]) -> str | None:
+    errors = response.get("errors")
+    if isinstance(errors, list) and errors:
+        messages = [str(item.get("message", item)) if isinstance(item, dict) else str(item) for item in errors]
+        return "; ".join(messages)
+    total_count = response.get("total_count")
+    if total_count == 0:
+        return "OpenSubtitles returned no matching subtitles"
+    return None
