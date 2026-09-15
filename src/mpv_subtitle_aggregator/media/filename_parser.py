@@ -16,7 +16,7 @@ _GROUP_RE = re.compile(r"[- ](?P<group>[A-Za-z][A-Za-z0-9]+)(?:\[[^]]+\])?$")
 _NOISE_RE = re.compile(
     r"\b(?:2160p|1080p|720p|480p|WEB[- .]?DL|WEB[- .]?Rip|Blu[- .]?Ray|HDTV|"
     r"DDP?(?:\d\.\d)?|AAC\d?(?:\.\d)?|DUAL|REMUX|PROPER|REPACK|x264|x265|"
-    r"h\.?(?:264|265)|HEVC|AV1|MULTI|SUBBED|DUBBED)\b",
+    r"h\.?(?:264|265)|HEVC|AV1|MULTI|SUBBED|DUBBED|NF|WEB-DL)\b",
     re.I,
 )
 
@@ -40,6 +40,27 @@ def parse_filename(filename: str) -> MediaInfo:
     title = re.sub(r"\s+", " ", title).strip(" -")
     title = _NOISE_RE.sub(" ", title)
     title = re.sub(r"\s+", " ", title).strip(" -") or stem
+
+    resolution = resolution_match.group("value") if resolution_match else None
+    if resolution and "x" in resolution.lower():
+        resolution = f"{resolution.split('x', 1)[1]}p"
+
+    source = (
+        source_match.group(1).replace(".", " ").replace("-", "-").upper() if source_match else None
+    )
+    return MediaInfo(
+        title=title,
+        year=int(year_match.group(1)) if year_match else None,
+        media_type=media_type,
+        season=int(tv_match.group("season")) if tv_match else None,
+        episode=int(tv_match.group("episode")) if tv_match else None,
+        filename=name,
+        resolution=resolution,
+        source=source,
+        release_group=group_match.group("group") if group_match else None,
+        video_codec=codec_match.group(1).upper() if codec_match else None,
+    )
+
 
     resolution = resolution_match.group("value") if resolution_match else None
     if resolution and "x" in resolution.lower():

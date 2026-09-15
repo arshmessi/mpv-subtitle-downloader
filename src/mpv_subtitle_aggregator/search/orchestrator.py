@@ -22,12 +22,41 @@ class SearchOrchestrator:
 
     async def search(self, media: MediaInfo, languages: list[str] | None = None) -> SearchResponse:
         languages = languages or ["en"]
+        
+        # Primary search using original media info
         tasks = [self._search_provider(provider, media, languages) for provider in self.providers]
         collected = await asyncio.gather(*tasks)
+        
         reports = [item[0] for item in collected]
         results = deduplicate(
             [result for _, provider_results in collected for result in provider_results]
         )
+        
+        # Fallback: if no results, try a cleaned title search
+        if not results:
+            from ..media.filename_parser import _NOISE_RE
+            # Create a "cleaned" version of the media for the fallback search
+            fallback_media = MediaInfo(
+                title=_NOISE_RE.sub(" ", media.title).strip(),
+                year=media.year,
+                media_type=media.media_type,
+                season=media.season,
+                episode=media.episode
+            )
+            
+            tasks = [self._search_provider(provider, fallback_media, languages) for provider in self.providers]
+            collected = await asyncio.gather(*tasks)
+            
+            # Merge reports (overwrite failures with fallback results)
+            for i, (_, provider_results) in enumerate(collected):
+                if provider_results:
+                    reports[i] = ProviderReport(
+                        self.providers[i].id, ProviderStatus.SUCCESS, len(provider_results), None
+                    )
+                    results.extend(provider_results)
+            
+            results = deduplicate(results)
+
         rank_results(media, results, languages[0])
         for index, result in enumerate(results, 1):
             result.result_id = f"r{index}"

@@ -19,10 +19,41 @@ def identify(
 ) -> MediaInfo:
     """Identify media without requiring MPV or any provider dependency."""
     metadata = metadata or {}
-    source_name = filename or (Path(path).name if path and not _is_url(path) else None)
-    parsed = parse_filename(source_name) if source_name else MediaInfo(title=media_title or "")
+    
+    # Normalize path: handle file:// URIs
+    normalized_path = path
+    if path and path.startswith("file://"):
+        normalized_path = path.replace("file://", "")
+        if normalized_path.startswith("//"):
+            normalized_path = normalized_path[2:]
+        # Handle URL encoding (e.g., %20 to space)
+        import urllib.parse
+        normalized_path = urllib.parse.unquote(normalized_path)
+
+    # If it's a web URL (not a local file), try to extract a title from the path
+    if normalized_path and _is_url(normalized_path):
+        parsed_url = urlparse(normalized_path)
+        url_path = parsed_url.path
+        if url_path:
+            # Extract filename from URL path and treat it as a filename for parsing
+            filename = Path(url_path).name
+            parsed = parse_filename(filename)
+        else:
+            parsed = MediaInfo(title=media_title or "")
+    else:
+        source_name = filename or (Path(normalized_path).name if normalized_path else None)
+        parsed = parse_filename(source_name) if source_name else MediaInfo(title=media_title or "")
+
     if media_title:
-        parsed.title = _clean_title(media_title)
+        # If media_title looks like a filename (contains extensions or common noise), clean it
+        if "." in media_title and any(ext in media_title.lower() for ext in [".mkv", ".mp4", ".avi", ".mov"]):
+            cleaned = parse_filename(media_title)
+            if cleaned and cleaned.title:
+                parsed.title = cleaned.title
+            else:
+                parsed.title = _clean_title(media_title)
+        else:
+            parsed.title = _clean_title(media_title)
     parsed.path = path
     parsed.is_stream = bool(path and _is_url(path))
     parsed.mpv_title = media_title

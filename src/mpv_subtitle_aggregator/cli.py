@@ -5,19 +5,31 @@ from __future__ import annotations
 import argparse
 import asyncio
 import json
+import logging
 from dataclasses import asdict
 from pathlib import Path
 
-from . import __version__
-from .config import cache_directory, load_config
-from .media.identifier import identify
-from .models import MediaInfo, SubtitleResult
-from .providers.registry import built_in_registry
-from .search.orchestrator import SearchOrchestrator
-from .search.selection import select_result
+from mpv_subtitle_aggregator import __version__
+from mpv_subtitle_aggregator.config import cache_directory, load_config
+from mpv_subtitle_aggregator.media.identifier import identify
+from mpv_subtitle_aggregator.models import MediaInfo, SubtitleResult
+from mpv_subtitle_aggregator.providers.registry import built_in_registry
+from mpv_subtitle_aggregator.search.orchestrator import SearchOrchestrator
+from mpv_subtitle_aggregator.search.selection import select_result
+
+
+# Setup a simple log file for debugging shim issues
+log_file = Path(cache_directory()) / "backend.log"
+logging.basicConfig(
+    filename=log_file,
+    level=logging.DEBUG,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+)
+logger = logging.getLogger("mpv-subtitle")
 
 
 def main() -> int:
+    logger.debug("CLI main() invoked")
     parser = argparse.ArgumentParser(prog="mpv-subtitle")
     parser.add_argument("--version", action="version", version=__version__)
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -45,10 +57,14 @@ def main() -> int:
     subparsers.add_parser("providers")
     subparsers.add_parser("doctor")
     args = parser.parse_args()
+    logger.debug(f"Args parsed: {args}")
+
     if args.command == "providers":
         for provider in built_in_registry().all():
             print(f"{provider.id}\t{provider.name}")
         return 0
+    # ...existing code...
+
     if args.command == "doctor":
         print("MPV Subtitle Aggregator Doctor\n  Core              OK\n  Provider registry OK")
         return 0
@@ -68,11 +84,19 @@ def main() -> int:
         media = MediaInfo(args.title, year=args.year, season=args.season, episode=args.episode)
     providers = args.providers.split(",") if getattr(args, "providers", None) else config.providers
     registry = built_in_registry()
-    response = asyncio.run(
-        SearchOrchestrator(registry.select(providers), config.timeout).search(
-            media, [args.language]
+    logger.debug(f"Starting search for {media.title} using providers {providers}")
+    try:
+        response = asyncio.run(
+            SearchOrchestrator(registry.select(providers), config.timeout).search(
+                media, [args.language]
+            )
         )
-    )
+        logger.debug(f"Search completed. Success: {response.success}, Results: {len(response.results)}")
+    except Exception as e:
+        logger.exception("Search orchestrator failed")
+        print(json.dumps({"success": False, "message": str(e)}) if getattr(args, "json", False) else f"Error: {e}")
+        return 1
+
     _save_search_response(response)
     if getattr(args, "json", False):
         print(json.dumps(asdict(response), default=str, indent=2))
@@ -115,3 +139,9 @@ def _download_cached_result(result_id: str, as_json: bool, config: object) -> in
     output = {"success": True, "path": str(path), "result_id": result_id}
     print(json.dumps(output) if as_json else str(path))
     return 0
+
+
+if __name__ == "__main__":
+    import sys
+
+    sys.exit(main())
