@@ -44,7 +44,10 @@ class SearchOrchestrator:
                 episode=media.episode
             )
             
-            tasks = [self._search_provider(provider, fallback_media, languages) for provider in self.providers]
+            tasks = [
+                self._search_provider(provider, fallback_media, languages)
+                for provider in self.providers
+            ]
             collected = await asyncio.gather(*tasks)
             
             # Merge reports (overwrite failures with fallback results)

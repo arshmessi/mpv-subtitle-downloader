@@ -2,13 +2,11 @@ local options = require 'mp.options'
 local input = require 'mp.input'
 local utils = require 'mp.utils'
 
-local PYTHON_EXE = 'C:\\Users\\arshm\\OneDrive\\Desktop\\projects\\mpv-subtitle-downloader\\mpv-subtitle-downloader\\.venv\\Scripts\\python.exe'
-local CLI_MODULE = '-m mpv_subtitle_aggregator.cli'
-
 local opts = {
     hotkey = 'F12',
     language = 'en',
     profile = 'default',
+    python_exe = 'python',
 }
 options.read_options(opts, 'subtitle-aggregator')
 
@@ -40,7 +38,7 @@ local function download_result(result_id)
     mp.osd_message('Downloading subtitle ' .. result_id .. '...')
     mp.command_native_async({
         name = 'subprocess',
-        args = {PYTHON_EXE, CLI_MODULE, 'download-result', result_id, '--json'},
+        args = {opts.python_exe, '-u', '-m', 'mpv_subtitle_aggregator.cli', 'download-result', result_id, '--json'},
         capture_stdout = true,
         capture_stderr = true,
     }, function(success, result, error)
@@ -95,7 +93,7 @@ local function run_search(interactive, title, season, episode, imdb_id)
     local path = mp.get_property('path') or ''
     title = title or mp.get_property('media-title') or mp.get_property('filename') or ''
     mp.osd_message('Searching subtitles...')
-    local command = {PYTHON_EXE, CLI_MODULE, 'search', path, '--language', opts.language, '--json'}
+    local command = {opts.python_exe, '-u', '-m', 'mpv_subtitle_aggregator.cli', 'search', path, '--language', opts.language, '--json'}
     if title ~= '' then
         table.insert(command, '--media-title')
         table.insert(command, title)

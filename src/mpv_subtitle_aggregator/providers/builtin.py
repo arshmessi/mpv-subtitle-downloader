@@ -147,7 +147,15 @@ class OpenSubtitlesProvider(JsonApiProvider):
         from ..download.downloader import download_file
 
         subtitle.download_url = download_url
-        return await download_file(subtitle, destination)
+        return await download_file(
+            subtitle,
+            destination,
+            headers={
+                "Accept": "application/octet-stream",
+                "Api-Key": self.api_key,
+                "User-Agent": self.user_agent,
+            },
+        )
 
     def _request(
         self, method: str, path: str, params: dict[str, str], payload: dict[str, Any] | None

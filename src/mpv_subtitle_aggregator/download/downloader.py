@@ -5,18 +5,24 @@ from __future__ import annotations
 import asyncio
 import io
 import zipfile
+from collections.abc import Mapping
 from pathlib import Path
-from urllib.request import urlopen
+from urllib.request import Request, urlopen
 
 from ..models import SubtitleResult
 from .validation import SUPPORTED_EXTENSIONS, validate_subtitle
 
 
-async def download_file(result: SubtitleResult, destination: Path, overwrite: bool = False) -> Path:
+async def download_file(
+    result: SubtitleResult,
+    destination: Path,
+    overwrite: bool = False,
+    headers: Mapping[str, str] | None = None,
+) -> Path:
     if not result.download_url:
         raise ValueError("selected subtitle has no download URL")
     destination.mkdir(parents=True, exist_ok=True)
-    data = await asyncio.to_thread(_read_url, result.download_url)
+    data = await asyncio.to_thread(_read_url, result.download_url, headers)
     path = destination / f"{result.result_id}.srt"
     if path.exists() and not overwrite:
         path = destination / f"{result.result_id}-new.srt"
@@ -28,8 +34,9 @@ async def download_file(result: SubtitleResult, destination: Path, overwrite: bo
     return path
 
 
-def _read_url(url: str) -> bytes:
-    with urlopen(url, timeout=30) as response:  # noqa: S310 - provider returned URL
+def _read_url(url: str, headers: Mapping[str, str] | None = None) -> bytes:
+    request = Request(url, headers=dict(headers or {}))
+    with urlopen(request, timeout=30) as response:  # noqa: S310 - provider returned URL
         return response.read()
 
 

@@ -7,6 +7,7 @@ from collections.abc import Iterable
 from .base import SubtitleProvider
 from .builtin import OpenSubtitlesProvider, SubDLProvider, SubSourceProvider
 from .subdl_public import SubDLPublicProvider
+from .tvsubtitles import TVSubtitlesProvider
 
 
 class ProviderRegistry:
@@ -36,5 +37,11 @@ class ProviderRegistry:
 
 def built_in_registry() -> ProviderRegistry:
     return ProviderRegistry(
-        [SubDLPublicProvider(), OpenSubtitlesProvider(), SubDLProvider(), SubSourceProvider()]
+        [
+            SubDLPublicProvider(),
+            TVSubtitlesProvider(),
+            OpenSubtitlesProvider(),
+            SubDLProvider(),
+            SubSourceProvider(),
+        ]
     )

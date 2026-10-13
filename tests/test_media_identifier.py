@@ -21,11 +21,27 @@ class MediaIdentifierTests(unittest.TestCase):
         self.assertEqual((media.season, media.episode), (1, 1))
         self.assertEqual(media.media_type, MediaType.TV)
 
+    def test_tv_release_with_compact_episode_number(self) -> None:
+        media = parse_filename("The.Mentalist.1x07.HDTV.x264-GROUP.mkv")
+        self.assertEqual(media.title, "The Mentalist")
+        self.assertEqual((media.season, media.episode), (1, 7))
+        self.assertEqual(media.media_type, MediaType.TV)
+
     def test_stream_uses_title_and_does_not_hash(self) -> None:
         media = identify("https://jellyfin.example/videos/123", media_title="100 Meters (2025)")
         self.assertTrue(media.is_stream)
         self.assertEqual(media.title, "100 Meters (2025)")
         self.assertIsNone(media.file_hash)
+
+    def test_stream_media_title_preserves_tv_episode_identity(self) -> None:
+        media = identify(
+            "https://jellyfin.example/videos/123?MediaSourceId=x&api_key=y",
+            media_title="The Mentalist - s1e13 - Paint It Red",
+        )
+        self.assertEqual(media.title, "The Mentalist")
+        self.assertEqual((media.season, media.episode), (1, 13))
+        self.assertEqual(media.media_type, MediaType.TV)
+        self.assertTrue(media.is_stream)
 
     def test_explicit_title_overrides_wrong_filename_title(self) -> None:
         media = identify(

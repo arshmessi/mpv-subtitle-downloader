@@ -5,24 +5,16 @@ auto_select_best = true
 timeout = 15
 show_provider_status = true
 
-[providers.opensubtitles]
-enabled = true
-priority = 100
-
-[providers.subdl]
-enabled = true
-priority = 90
-
-[providers.subsource]
-enabled = true
-priority = 80
-
 [providers.subdl_public]
 enabled = true
 priority = 200
 
+[providers.tvsubtitles]
+enabled = true
+priority = 190
+
 [profiles.default]
-providers = ["subdl_public", "opensubtitles", "subdl", "subsource"]
+providers = ["subdl_public", "tvsubtitles"]
 
 [profiles.fast]
-providers = ["subdl_public", "opensubtitles", "subdl"]
+providers = ["subdl_public", "tvsubtitles"]

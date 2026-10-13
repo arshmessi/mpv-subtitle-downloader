@@ -7,7 +7,11 @@ from pathlib import Path
 
 from ..models import MediaInfo, MediaType
 
-_TV_RE = re.compile(r"(?:^|[. _-])S(?P<season>\d{1,2})E(?P<episode>\d{1,3})(?:$|[. _-])", re.I)
+_TV_RE = re.compile(
+    r"(?:^|[. _-])(?:S(?P<season_s>\d{1,2})E(?P<episode_s>\d{1,3})|"
+    r"(?P<season_x>\d{1,2})x(?P<episode_x>\d{1,3}))(?:$|[. _-])",
+    re.I,
+)
 _YEAR_RE = re.compile(r"(?<!\d)(19\d{2}|20\d{2})(?!\d)")
 _RESOLUTION_RE = re.compile(r"(?P<value>\d{3,4}p|\d{3,4}x\d{3,4})", re.I)
 _SOURCE_RE = re.compile(r"\b(WEB[- .]?DL|WEB[- .]?Rip|Blu[- .]?Ray|HDTV|DVD[- .]?Rip)\b", re.I)
@@ -33,6 +37,12 @@ def parse_filename(filename: str) -> MediaInfo:
     group_match = _GROUP_RE.search(stem.replace(".", " "))
 
     media_type = MediaType.TV if tv_match else MediaType.MOVIE
+    season = (
+        int(tv_match.group("season_s") or tv_match.group("season_x")) if tv_match else None
+    )
+    episode = (
+        int(tv_match.group("episode_s") or tv_match.group("episode_x")) if tv_match else None
+    )
     title_end = tv_match.start() if tv_match else (year_match.start() if year_match else len(stem))
     title = stem[:title_end]
     title = re.sub(r"[._]+", " ", title)
@@ -52,29 +62,8 @@ def parse_filename(filename: str) -> MediaInfo:
         title=title,
         year=int(year_match.group(1)) if year_match else None,
         media_type=media_type,
-        season=int(tv_match.group("season")) if tv_match else None,
-        episode=int(tv_match.group("episode")) if tv_match else None,
-        filename=name,
-        resolution=resolution,
-        source=source,
-        release_group=group_match.group("group") if group_match else None,
-        video_codec=codec_match.group(1).upper() if codec_match else None,
-    )
-
-
-    resolution = resolution_match.group("value") if resolution_match else None
-    if resolution and "x" in resolution.lower():
-        resolution = f"{resolution.split('x', 1)[1]}p"
-
-    source = (
-        source_match.group(1).replace(".", " ").replace("-", "-").upper() if source_match else None
-    )
-    return MediaInfo(
-        title=title,
-        year=int(year_match.group(1)) if year_match else None,
-        media_type=media_type,
-        season=int(tv_match.group("season")) if tv_match else None,
-        episode=int(tv_match.group("episode")) if tv_match else None,
+        season=season,
+        episode=episode,
         filename=name,
         resolution=resolution,
         source=source,

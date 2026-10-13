@@ -15,6 +15,26 @@ Copy `mpv/scripts/subtitle-aggregator.lua` to MPV's `scripts` directory and
 The exact locations vary by MPV distribution; use `mpv --path` or the package's
 configuration directory documentation to locate them.
 
+For a source checkout, install the backend in the repository virtual environment,
+then set `python_exe` in `subtitle-aggregator.conf` to:
+
+```text
+C:\Path\To\mpv-subtitle-downloader\.venv\Scripts\python.exe
+```
+
+The repository `mpv-subtitle.bat` is a developer/manual entry point and resolves
+the project root relative to itself. No API key or account is needed for the
+default SubDL movie and TVSubtitles TV providers.
+
+### Standalone MPV setup
+
+1. Copy the repository Lua script and script options file to your MPV config.
+2. Set `python_exe` to the interpreter from the virtual environment, or use the
+   released executable and adapt the command in the Lua adapter.
+3. Start MPV, press `F12`, choose a search, and select a result with `1`-`9`.
+
+The adapter never disables or replaces embedded subtitle tracks.
+
 ## Developer installation
 
 ```powershell

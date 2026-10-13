@@ -7,12 +7,13 @@ Profiles choose the providers used by normal searches:
 profile = "default"
 
 [profiles.default]
-providers = ["subdl_public", "opensubtitles", "subdl"]
+providers = ["subdl_public", "tvsubtitles"]
 ```
 
-The `subdl_public` provider searches public movie pages and downloads public
-English SRT archives without credentials. OpenSubtitles reads
-`OPEN_SUBTITLES_API_KEY`. Never place credentials in this tracked example file.
+The default providers are credential-free: `subdl_public` covers movies and
+`tvsubtitles` covers normal TV episodes. OpenSubtitles reads
+`OPEN_SUBTITLES_API_KEY` only when explicitly enabled and configured. Never place
+credentials in this tracked example file.
 
 One-off CLI selection is available with `--providers opensubtitles,subdl` or
 `--providers all`. The MPV options file belongs in MPV's `script-opts` directory.

@@ -12,7 +12,7 @@ from typing import Any
 @dataclass(slots=True)
 class AppConfig:
     providers: list[str] = field(
-        default_factory=lambda: ["subdl_public", "opensubtitles", "subdl", "subsource"]
+        default_factory=lambda: ["subdl_public", "tvsubtitles"]
     )
     excluded_providers: list[str] = field(default_factory=list)
     language: str = "en"
@@ -52,8 +52,13 @@ def load_config(path: Path | None = None) -> AppConfig:
     profile = str(data.get("profile", "default"))
     profile_data = data.get("profiles", {}).get(profile, {})
     configured = profile_data.get("providers") if isinstance(profile_data, dict) else None
+    selected_providers = list(configured) if configured else (enabled or AppConfig().providers)
+    if not os.environ.get("OPEN_SUBTITLES_API_KEY"):
+        selected_providers = [
+            provider for provider in selected_providers if provider != "opensubtitles"
+        ]
     return AppConfig(
-        providers=list(configured) if configured else (enabled or AppConfig().providers),
+        providers=selected_providers or AppConfig().providers,
         language=str(data.get("language", "en")),
         profile=str(data.get("profile", "default")),
         interactive_selection=bool(data.get("interactive_selection", False)),

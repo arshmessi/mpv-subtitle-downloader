@@ -12,11 +12,10 @@ from pathlib import Path
 from mpv_subtitle_aggregator import __version__
 from mpv_subtitle_aggregator.config import cache_directory, load_config
 from mpv_subtitle_aggregator.media.identifier import identify
-from mpv_subtitle_aggregator.models import MediaInfo, SubtitleResult
+from mpv_subtitle_aggregator.models import MediaInfo, MediaType, SubtitleResult
 from mpv_subtitle_aggregator.providers.registry import built_in_registry
 from mpv_subtitle_aggregator.search.orchestrator import SearchOrchestrator
 from mpv_subtitle_aggregator.search.selection import select_result
-
 
 # Setup a simple log file for debugging shim issues
 log_file = Path(cache_directory()) / "backend.log"
@@ -81,7 +80,17 @@ def main() -> int:
         if args.imdb_id:
             media.imdb_id = args.imdb_id
     else:
-        media = MediaInfo(args.title, year=args.year, season=args.season, episode=args.episode)
+        media = MediaInfo(
+            args.title,
+            year=args.year,
+            media_type=(
+                MediaType.TV
+                if args.season is not None or args.episode is not None
+                else MediaType.UNKNOWN
+            ),
+            season=args.season,
+            episode=args.episode,
+        )
     providers = args.providers.split(",") if getattr(args, "providers", None) else config.providers
     registry = built_in_registry()
     logger.debug(f"Starting search for {media.title} using providers {providers}")
@@ -91,10 +100,16 @@ def main() -> int:
                 media, [args.language]
             )
         )
-        logger.debug(f"Search completed. Success: {response.success}, Results: {len(response.results)}")
+        logger.debug(
+            f"Search completed. Success: {response.success}, Results: {len(response.results)}"
+        )
     except Exception as e:
         logger.exception("Search orchestrator failed")
-        print(json.dumps({"success": False, "message": str(e)}) if getattr(args, "json", False) else f"Error: {e}")
+        print(
+            json.dumps({"success": False, "message": str(e)})
+            if getattr(args, "json", False)
+            else f"Error: {e}"
+        )
         return 1
 
     _save_search_response(response)

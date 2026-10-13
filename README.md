@@ -11,9 +11,8 @@ user explicitly invokes it.
 
 Version 0.1.0 is a core/developer preview. Movie/TV filename identification,
 provider orchestration, ranking, selection, safe downloads, and MPV integration
-are implemented. The default credential-free provider is a public SubDL movie
-adapter. OpenSubtitles.com, SubDL API, and SubSource API adapters remain
-optional and require the user's own configuration.
+are implemented. The default installation uses credential-free public providers
+and requires no API key, account, username, or password.
 
 ## What works now
 
@@ -24,8 +23,9 @@ optional and require the user's own configuration.
 | MPV-owned embedded subtitle handling       | Aggregator does not inspect or replace it |
 | Manual alternative result selection        | Available                                 |
 | Manual media-title correction              | Available                                 |
-| Credential-free provider                   | SubDL public movie pages                  |
-| OpenSubtitles.com                          | Optional API key                          |
+| Credential-free movie provider             | SubDL public movie pages                  |
+| Credential-free TV provider                | TVSubtitles.net                           |
+| OpenSubtitles.com                          | Optional API key; disabled by default     |
 | SubDL/SubSource APIs                       | Optional endpoint/API configuration       |
 | Automatic/background subtitle search       | Not implemented by design                 |
 
@@ -43,8 +43,9 @@ See [docs/installation.md](docs/installation.md), [docs/configuration.md](docs/c
 [docs/jellyfin.md](docs/jellyfin.md), [docs/troubleshooting.md](docs/troubleshooting.md),
 and [docs/architecture.md](docs/architecture.md).
 
-Live OpenSubtitles checks are opt-in and require `OPEN_SUBTITLES_API_KEY`; normal
-CI never contacts providers.
+The default CI suite uses mocked provider responses and never contacts providers.
+OpenSubtitles is optional and disabled automatically when `OPEN_SUBTITLES_API_KEY`
+is absent.
 
 ## Privacy and network behavior
 

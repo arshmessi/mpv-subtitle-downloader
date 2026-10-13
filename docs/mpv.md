@@ -4,9 +4,9 @@ Install `mpv/scripts/subtitle-aggregator.lua` in MPV's scripts directory and
 `mpv/script-opts/subtitle-aggregator.conf` in its script options directory.
 
 The integration uses one global shortcut to avoid collisions with other MPV
-scripts. The default control is:
+scripts. The default control is `F12`.
 
-- `B`: open the subtitle menu.
+- `F12`: open the subtitle menu.
 
 Navigate the menu with Up/Down, press Enter to choose, or Escape to close it:
 
@@ -16,6 +16,11 @@ Navigate the menu with Up/Down, press Enter to choose, or Escape to close it:
 
 Result selection and title correction use temporary key bindings only while
 their respective UI is open.
+
+Set `python_exe` in `script-opts/subtitle-aggregator.conf` to the Python
+interpreter where this project is installed. For a source checkout, use the
+project virtual environment. The repository Lua script passes each subprocess
+argument separately, so Jellyfin URLs remain opaque data.
 
 The Lua script is only an MPV adapter. Python identifies the media, searches
 providers, ranks results, downloads the selected result, and returns a stable

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 from urllib.parse import urlparse
 
@@ -46,12 +47,19 @@ def identify(
 
     if media_title:
         # If media_title looks like a filename (contains extensions or common noise), clean it
-        if "." in media_title and any(ext in media_title.lower() for ext in [".mkv", ".mp4", ".avi", ".mov"]):
+        episode_marker = r"(?:^|[. _-])(?:s\d{1,2}e\d{1,3}|\d{1,2}x\d{1,3})(?:$|[. _-])"
+        if re.search(episode_marker, media_title, re.I):
+            cleaned = parse_filename(f"{media_title}.mkv")
+            parsed.title = cleaned.title
+            parsed.season = cleaned.season
+            parsed.episode = cleaned.episode
+            parsed.media_type = cleaned.media_type
+            parsed.year = cleaned.year
+        elif "." in media_title and any(
+            ext in media_title.lower() for ext in [".mkv", ".mp4", ".avi", ".mov"]
+        ):
             cleaned = parse_filename(media_title)
-            if cleaned and cleaned.title:
-                parsed.title = cleaned.title
-            else:
-                parsed.title = _clean_title(media_title)
+            parsed.title = cleaned.title if cleaned.title else _clean_title(media_title)
         else:
             parsed.title = _clean_title(media_title)
     parsed.path = path
