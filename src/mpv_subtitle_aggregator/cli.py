@@ -19,6 +19,7 @@ from mpv_subtitle_aggregator.search.selection import select_result
 
 # Setup a simple log file for debugging shim issues
 log_file = Path(cache_directory()) / "backend.log"
+log_file.parent.mkdir(parents=True, exist_ok=True)
 logging.basicConfig(
     filename=log_file,
     level=logging.DEBUG,
