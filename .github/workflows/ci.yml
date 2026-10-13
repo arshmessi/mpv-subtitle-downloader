@@ -34,4 +34,4 @@ jobs:
           cache: pip
       - run: python -m pip install -e ".[dev]"
       - run: python -m pytest -q
-      - run: python -m mpv_subtitle_aggregator.cli doctor
+      - run: mpv-subtitle doctor
